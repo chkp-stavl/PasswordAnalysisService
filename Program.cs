@@ -11,8 +11,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IPasswordAnalysisService, PasswordAnalysisService.Services.PasswordAnalysisService>();
 builder.Services.AddScoped<IStrengthChecker, StrengthChecker>();
-builder.Services.AddScoped<IBreachChecker, BreachChecker>();
+/*builder.Services.AddScoped<IBreachChecker, BreachChecker>();*/
 builder.Services.AddScoped<IRiskAssessmentService, RiskAssessmentService>();
+builder.Services.AddHttpClient<IBreachChecker, HibpApiClient>();
 
 builder.Services.AddControllers();
 
