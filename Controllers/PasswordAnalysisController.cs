@@ -24,7 +24,7 @@ namespace PasswordAnalysisService.Controllers
                 var result = passwordAnalysisService.Analyze(request.Password);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, "Internal server error");
             }

@@ -5,7 +5,15 @@ namespace PasswordAnalysisService.Logic
     {
         public Task<BreachResult> CheckAsync(string password, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            ct.ThrowIfCancellationRequested();
+
+            return Task.FromResult(
+                new BreachResult(
+                    IsBreached: false,
+                    BreachCount: 0,
+                    Source: "Stub"
+                )
+            );
         }
     }
 }
