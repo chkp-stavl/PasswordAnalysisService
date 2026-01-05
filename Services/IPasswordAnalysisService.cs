@@ -4,7 +4,7 @@ namespace PasswordAnalysisService.Services
 {
     public interface IPasswordAnalysisService
     {
-        PasswordAnalysisResponse Analyze(string password);
+        Task<PasswordAnalysisResponse> Analyze(string password, CancellationToken ct = default);
     }
 }
 

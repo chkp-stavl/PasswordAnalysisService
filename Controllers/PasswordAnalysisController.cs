@@ -9,11 +9,11 @@ namespace PasswordAnalysisService.Controllers
     [Route("password-analysis")]
     public class PasswordAnalysisController : ControllerBase
     {
-        private readonly IPasswordAnalysisService iPasswordAnalysisService;
+        private readonly IPasswordAnalysisService passwordAnalysisService;
 
-        public PasswordAnalysisController(IPasswordAnalysisService iPasswordAnalysisService)
+        public PasswordAnalysisController(IPasswordAnalysisService passwordAnalysisService)
         {
-            this.iPasswordAnalysisService = iPasswordAnalysisService;
+            this.passwordAnalysisService = passwordAnalysisService;
         }
 
         [HttpPost("analyze")]
@@ -21,7 +21,7 @@ namespace PasswordAnalysisService.Controllers
         {
             try
             {
-                var result = iPasswordAnalysisService.Analyze(request.Password);
+                var result = passwordAnalysisService.Analyze(request.Password);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -1,9 +1,33 @@
 ﻿namespace PasswordAnalysisService.Models.Responses
 {
-    public class PasswordAnalysisResponse
+    public record PasswordAnalysisResponse
     {
-        public bool IsCompromised { get; set; }
-        public int StrengthScore { get; set; }
-        public string? Message { get; set; }
+        public PasswordStrengthDto Strength { get; init; } = default!;
+        public BreachDto Breach { get; init; } = default!;
+        public RiskDto Risk { get; init; } = default!;
     }
+
+    public record PasswordStrengthDto
+    {
+        public int Score { get; init; }                 
+        public string Level { get; init; } = default!;  
+        public IReadOnlyList<string> Issues { get; init; } = [];
+    }
+
+    public record BreachDto
+    {
+        public bool IsCompromised { get; init; }
+        public int? BreachCount { get; init; }
+        public string? Source { get; init; }
+    }
+
+    public record RiskDto
+    {
+        public int Score { get; init; }                  
+        public string Level { get; init; } = default!;   
+        public IReadOnlyList<string> Reasons { get; init; } = [];
+    }
+
+
+
 }
