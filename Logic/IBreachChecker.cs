@@ -1,4 +1,6 @@
-﻿namespace PasswordAnalysisService.Logic
+﻿using static PasswordAnalysisService.Consts;
+
+namespace PasswordAnalysisService.Logic
 {
     public interface IBreachChecker
     {
@@ -6,9 +8,17 @@
     }
 
     public record BreachResult(
+    bool IsBreached,
+    IReadOnlyList<BreachSourceResult> Sources
+   
+);
+
+    public record BreachSourceResult(
+        string Source,
         bool IsBreached,
-        int? BreachCount,        
-        string? Source          
+        int? BreachCount,
+        BreachPrevalence Prevalence
     );
+
 
 }

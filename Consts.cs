@@ -17,5 +17,12 @@
             High,
             Critical
         }
+        public enum BreachPrevalence
+        {
+            Unknown,
+            Low,
+            Medium,
+            High
+        }
     }
 }

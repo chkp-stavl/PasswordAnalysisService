@@ -17,11 +17,11 @@ namespace PasswordAnalysisService.Controllers
         }
 
         [HttpPost("analyze")]
-        public IActionResult Analyze(PasswordAnalysisRequest request)
+        public async Task<IActionResult> AnalyzeAsync(PasswordAnalysisRequest request)
         {
             try
             {
-                var result = passwordAnalysisService.Analyze(request.Password);
+                var result = await passwordAnalysisService.Analyze(request.Password);
                 return Ok(result);
             }
             catch (Exception)

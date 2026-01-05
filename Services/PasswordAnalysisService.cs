@@ -40,8 +40,7 @@ namespace PasswordAnalysisService.Services
                 Breach = new BreachDto
                 {
                     IsCompromised = breach.IsBreached,
-                    BreachCount = breach.BreachCount,
-                    Source = breach.Source
+                    Sources = breach.Sources
                 },
                 Risk = new RiskDto
                 {

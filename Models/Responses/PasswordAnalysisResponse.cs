@@ -1,4 +1,6 @@
-﻿namespace PasswordAnalysisService.Models.Responses
+﻿using PasswordAnalysisService.Logic;
+
+namespace PasswordAnalysisService.Models.Responses
 {
     public record PasswordAnalysisResponse
     {
@@ -18,7 +20,7 @@
     {
         public bool IsCompromised { get; init; }
         public int? BreachCount { get; init; }
-        public string? Source { get; init; }
+        public IReadOnlyList<BreachSourceResult> Sources { get; init; } = [];
     }
 
     public record RiskDto
