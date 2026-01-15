@@ -9,9 +9,9 @@ namespace PasswordAnalysisService.Controllers
     [Route("password-analysis")]
     public class PasswordAnalysisController : ControllerBase
     {
-        private readonly IPasswordAnalysisService passwordAnalysisService;
+        private readonly IPasswordAnalysisOrchestrator passwordAnalysisService;
 
-        public PasswordAnalysisController(IPasswordAnalysisService passwordAnalysisService)
+        public PasswordAnalysisController(IPasswordAnalysisOrchestrator passwordAnalysisService)
         {
             this.passwordAnalysisService = passwordAnalysisService;
         }

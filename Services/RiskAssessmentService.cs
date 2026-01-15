@@ -9,63 +9,29 @@ namespace PasswordAnalysisService.Services
         public RiskResult Assess(StrengthResult strength, BreachResult breach)
         {
             var reasons = ImmutableArray.CreateBuilder<string>();
-            int riskScore = 0;
+            int score = 0;
 
-            // 1. Breach score
-            int breachScore = 0;
-
-            if (breach.IsBreached)
-            {
-                breachScore += 40;
-            }
-
-            breachScore += breach.Sources.Count(s => s.IsBreached) switch
-            {
-                >= 3 => 30,
-                2 => 20,
-                1 => 10,
-                _ => 0
-            };
-
-            if (breach.Sources.Any(s => s.Prevalence == BreachPrevalence.High))
-            {
-                breachScore += 10;
-            }
-
+            var breachScore = CalculateBreachScore(breach);
             if (breachScore > 0)
             {
-                riskScore += breachScore;
+                score += breachScore;
                 reasons.Add("Password was found in known data breaches");
             }
 
-            // 2. Strength penalty
-            int strengthPenalty = strength.Level switch
-            {
-                PasswordStrengthLevel.VeryWeak => 40,
-                PasswordStrengthLevel.Weak => 30,
-                PasswordStrengthLevel.Medium => 15,
-                PasswordStrengthLevel.Strong => 0,
-                PasswordStrengthLevel.VeryStrong => 0,
-                _ => 0
-            };
-
+            // 2. Strength contribution
+            var strengthPenalty = CalculateStrengthPenalty(strength);
             if (strengthPenalty > 0)
             {
-                riskScore += strengthPenalty;
-                reasons.Add($"Password strength is {strength.Level}");
+                score += strengthPenalty;
+
+                var strengthReason = GetStrengthReason(strength.Level);
+                if (strengthReason != null)
+                {
+                    reasons.Add(strengthReason);
+                }
             }
-
-            // 3. Clamp
-            riskScore = Math.Clamp(riskScore, 0, 100);
-
-            // 4. Risk level
-            var level = riskScore switch
-            {
-                >= 80 => RiskLevel.Critical,
-                >= 60 => RiskLevel.High,
-                >= 30 => RiskLevel.Medium,
-                _ => RiskLevel.Low
-            };
+            score = Math.Clamp(score, 0, 100);
+            var level = DetermineRiskLevel(score);
 
             if (reasons.Count == 0)
             {
@@ -74,9 +40,56 @@ namespace PasswordAnalysisService.Services
 
             return new RiskResult(
                 level,
-                riskScore,
+                score,
                 reasons.ToImmutable()
             );
+        }
+
+
+        private static int CalculateBreachScore(BreachResult breach)
+        {
+            int score = 0;
+
+            if (breach.IsBreached)
+                score += 40;
+
+            if (breach.Sources.Any(s => s.Prevalence == BreachPrevalence.High))
+                score += 10;
+
+            return score;
+        }
+
+        private static int CalculateStrengthPenalty(StrengthResult strength)
+        {
+            return strength.Level switch
+            {
+                PasswordStrengthLevel.VeryWeak => 40,
+                PasswordStrengthLevel.Weak => 30,
+                PasswordStrengthLevel.Medium => 15,
+                _ => 0
+            };
+        }
+
+        private static string? GetStrengthReason(PasswordStrengthLevel level)
+        {
+            return level switch
+            {
+                PasswordStrengthLevel.VeryWeak => "Password is extremely weak",
+                PasswordStrengthLevel.Weak => "Password is weak",
+                PasswordStrengthLevel.Medium => "Password strength is moderate",
+                _ => null
+            };
+        }
+
+        private static RiskLevel DetermineRiskLevel(int score)
+        {
+            return score switch
+            {
+                >= 80 => RiskLevel.Critical,
+                >= 60 => RiskLevel.High,
+                >= 30 => RiskLevel.Medium,
+                _ => RiskLevel.Low
+            };
         }
     }
 }

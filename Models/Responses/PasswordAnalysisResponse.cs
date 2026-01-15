@@ -2,11 +2,18 @@
 
 namespace PasswordAnalysisService.Models.Responses
 {
-    public record PasswordAnalysisResponse
+    public record PasswordAnalysisResponse : BaseResponse
     {
         public PasswordStrengthDto Strength { get; init; } = default!;
         public BreachDto Breach { get; init; } = default!;
         public RiskDto Risk { get; init; } = default!;
+
+        public static PasswordAnalysisResponse Invalid(string error) =>
+        new()
+        {
+            IsValid = false,
+            Error = error
+        };
     }
 
     public record PasswordStrengthDto
@@ -21,6 +28,7 @@ namespace PasswordAnalysisService.Models.Responses
         public bool IsCompromised { get; init; }
         public int? BreachCount { get; init; }
         public IReadOnlyList<BreachSourceResult> Sources { get; init; } = [];
+        public string? Warning { get; init; } = default!;
     }
 
     public record RiskDto

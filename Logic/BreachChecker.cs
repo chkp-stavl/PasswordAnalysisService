@@ -14,30 +14,28 @@ namespace PasswordAnalysisService.Logic
 
         public async Task<BreachResult> CheckAsync(string password, CancellationToken ct)
         {
-            var sourceResults = new List<BreachSourceResult>();
-
-            foreach (var source in sources)
-            {
-                var result = await source.CheckAsync(password, ct);
-                if (result != null)
-                {
-                    sourceResults.Add(new BreachSourceResult(
-                        result.Source,
-                        result.IsBreached,
-                        result.BreachCount,
-                        result.Prevalence
-                        ));
-                }
-            }
+            var tasks = sources.Select(s => SafeCheck(s, password, ct));
+            var results = await Task.WhenAll(tasks);
 
             return new BreachResult(
-                IsBreached: sourceResults.Any(r => r.IsBreached),
-                Sources: sourceResults
+                results.Any(r => r.IsBreached),
+                results
             );
-
         }
 
-        
-
+        private async Task<BreachSourceResult> SafeCheck(
+            IBreachSource source,
+            string password,
+            CancellationToken ct)
+        {
+            try
+            {
+                return await source.CheckAsync(password, ct);
+            }
+            catch
+            {
+                return BreachSourceResult.Unavailable(source.GetType().Name);
+            }
+        }
     }
 }
