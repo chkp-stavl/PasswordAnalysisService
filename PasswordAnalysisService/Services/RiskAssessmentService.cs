@@ -30,7 +30,7 @@ namespace PasswordAnalysisService.Services
                     reasons.Add(strengthReason);
                 }
             }
-            score = Math.Clamp(score, 0, 100);
+            score = Math.Clamp(score, 0, MAX_SCORE);
             var level = DetermineRiskLevel(score);
 
             if (reasons.Count == 0)
@@ -51,10 +51,10 @@ namespace PasswordAnalysisService.Services
             int score = 0;
 
             if (breach.IsBreached)
-                score += 40;
+                score += BREACH_FOUND_SCORE;
 
             if (breach.Sources.Any(s => s.Prevalence == BreachPrevalence.High))
-                score += 10;
+                score += HIGH_PREVALENCE_BONUS;
 
             return score;
         }
@@ -63,9 +63,9 @@ namespace PasswordAnalysisService.Services
         {
             return strength.Level switch
             {
-                PasswordStrengthLevel.VeryWeak => 40,
-                PasswordStrengthLevel.Weak => 30,
-                PasswordStrengthLevel.Medium => 15,
+                PasswordStrengthLevel.VeryWeak => VERY_WEAK_PENALTY,
+                PasswordStrengthLevel.Weak => WEAK_PENALTY,
+                PasswordStrengthLevel.Medium => MEDIUM_PENALTY,
                 _ => 0
             };
         }
@@ -85,9 +85,9 @@ namespace PasswordAnalysisService.Services
         {
             return score switch
             {
-                >= 80 => RiskLevel.Critical,
-                >= 60 => RiskLevel.High,
-                >= 30 => RiskLevel.Medium,
+                >= CRITICAL_THRESHOLD => RiskLevel.Critical,
+                >= HIGH_THRESHOLD => RiskLevel.High,
+                >= RISK_MEDIUM_THRESHOLD => RiskLevel.Medium,
                 _ => RiskLevel.Low
             };
         }

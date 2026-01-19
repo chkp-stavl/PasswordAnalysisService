@@ -27,7 +27,7 @@ public class StrengthCheckerTests
 
         var result = await checker.CheckAsync(password, CancellationToken.None);
 
-        Assert.True(result.Score < 50);
+        Assert.True(result.Score < WEAK_THRESHOLD);
         Assert.Equal(PasswordStrengthLevel.Weak, result.Level);
 
         Assert.Contains("Password is too short", result.Issues);

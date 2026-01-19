@@ -12,36 +12,36 @@ namespace PasswordAnalysisService.Logic
             var issuesBuilder = ImmutableArray.CreateBuilder<string>();
             int score = 0;
 
-            if (password.Length >= 8)
-                score += 25;
+            if (password.Length >= MIN_PASS_LEN)
+                score += LENGTH_SCORE;
             else
                 issuesBuilder.Add("Password is too short");
 
             if (password.Any(char.IsUpper))
-                score += 15;
+                score += UPPERCASE_SCORE;
             else
                 issuesBuilder.Add("Missing uppercase letter");
 
             if (password.Any(char.IsLower))
-                score += 15;
+                score += LOWERCASE_SCORE;
             else
                 issuesBuilder.Add("Missing lowercase letter");
 
             if (password.Any(char.IsDigit))
-                score += 15;
+                score += DIGIT_SCORE;
             else
                 issuesBuilder.Add("Missing digit");
 
             if (password.Any(ch => !char.IsLetterOrDigit(ch)))
-                score += 30;
+                score += SPECIAL_CHAR_SCORE;
             else
                 issuesBuilder.Add("Missing special character");
 
-            score = Math.Min(score, 100);
+            score = Math.Min(score, MAX_SCORE);
             var level = score switch
             {
-                < 50 => PasswordStrengthLevel.Weak,
-                < 80 => PasswordStrengthLevel.Medium,
+                < WEAK_THRESHOLD => PasswordStrengthLevel.Weak,
+                < STRENGTH_MEDIUM_THRESHOLD => PasswordStrengthLevel.Medium,
                 _ => PasswordStrengthLevel.Strong
             };
             var result = new StrengthResult(
