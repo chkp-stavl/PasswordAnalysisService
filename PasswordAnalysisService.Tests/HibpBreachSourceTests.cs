@@ -1,57 +1,41 @@
 ﻿namespace PasswordAnalysisService.Tests;
 
 using PasswordAnalysisService.Logic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
+using PasswordAnalysisService.Utilities;
 using static PasswordAnalysisService.Consts;
 
 public class HibpBreachSourceTests
 {
-    private static HttpClient CreateHttpClient(
-        HttpStatusCode statusCode,
-        string responseContent)
-    {
-        var handler = new FakeHttpMessageHandler(statusCode, responseContent);
-        return new HttpClient(handler);
-    }
-
     [Fact]
     public async Task CheckAsync_WhenPasswordIsFound_ReturnsBreachedResult()
     {
-        var password = "password123";
-        var hash = "CBFDAC6008F9CAB4083784CBD1874F76618D2A97"; // SHA1(password123)
-        var suffix = hash[5..];
+        var hasher = new FakeHasher("ABCDESUFFIX");
+        var client = new FakeHibpClient($"SUFFIX:{HIGH_THRESHOLD_BREACH}");
+        var parser = new HibpResponseParser();
+        var mapper = new BreachPrevalenceMapper();
 
-        var response =
-            $"{suffix}:1000\nOTHERHASH:5";
+        var source = new HibpBreachSource(hasher, client, parser, mapper);
 
-        var client = CreateHttpClient(HttpStatusCode.OK, response);
-        var source = new HibpBreachSource(client);
-
-
-        var result = await source.CheckAsync(password);
-
-       
+        var result = await source.CheckAsync("password123");
 
         Assert.True(result.IsBreached);
-        Assert.Equal(1000, result.BreachCount);
+        Assert.Equal(HIGH_THRESHOLD_BREACH, result.BreachCount);
         Assert.Equal(BreachPrevalence.High, result.Prevalence);
+        Assert.True(result.IsAvailable);
     }
 
     [Fact]
     public async Task CheckAsync_WhenPasswordIsNotFound_ReturnsNotBreached()
     {
-        var password = "safePassword!";
-        var response = "ABCDEF1234567890:5";
+        var hasher = new FakeHasher("ABCDE12345SUFFIX");
+        var client = new FakeHibpClient("OTHER:5");
+        var parser = new HibpResponseParser();
+        var mapper = new BreachPrevalenceMapper();
 
-        var client = CreateHttpClient(HttpStatusCode.OK, response);
-        var source = new HibpBreachSource(client);
+        var source = new HibpBreachSource(hasher, client, parser, mapper);
 
-      
-        var result = await source.CheckAsync(password);
+        var result = await source.CheckAsync("safePassword");
 
-      
         Assert.False(result.IsBreached);
         Assert.Equal(0, result.BreachCount);
         Assert.Equal(BreachPrevalence.Unknown, result.Prevalence);
@@ -60,9 +44,12 @@ public class HibpBreachSourceTests
     [Fact]
     public async Task CheckAsync_WhenApiReturnsFailure_ReturnsUnavailable()
     {
-        var client = CreateHttpClient(HttpStatusCode.InternalServerError, "");
-        var source = new HibpBreachSource(client);
+        var hasher = new FakeHasher("ABCDE12345SUFFIX");
+        var client = new FakeHibpClient(null); 
+        var parser = new HibpResponseParser();
+        var mapper = new BreachPrevalenceMapper();
 
+        var source = new HibpBreachSource(hasher, client, parser, mapper);
 
         var result = await source.CheckAsync("password");
 
@@ -72,8 +59,12 @@ public class HibpBreachSourceTests
     [Fact]
     public async Task CheckAsync_WhenExceptionThrown_ReturnsUnavailable()
     {
-        var client = new HttpClient(new ThrowingHttpMessageHandler());
-        var source = new HibpBreachSource(client);
+        var hasher = new FakeHasher("ABCDE12345SUFFIX");
+        var client = new ThrowingHibpClient();
+        var parser = new HibpResponseParser();
+        var mapper = new BreachPrevalenceMapper();
+
+        var source = new HibpBreachSource(hasher, client, parser, mapper);
 
         var result = await source.CheckAsync("password");
 
@@ -83,48 +74,48 @@ public class HibpBreachSourceTests
     [Fact]
     public async Task CheckAsync_WhenMediumBreachCount_ReturnsMediumPrevalence()
     {
-        var password = "password123";
-        var hash = "CBFDAC6008F9CAB4083784CBD1874F76618D2A97";
-        var suffix = hash[5..];
+        var hasher = new FakeHasher("ABCDESUFFIX");
+        var client = new FakeHibpClient($"SUFFIX:{MEDIUM_THRESHOLD_BREACH}");
+        var parser = new HibpResponseParser();
+        var mapper = new BreachPrevalenceMapper();
 
-        var response = $"{suffix}:20";
-        var client = CreateHttpClient(HttpStatusCode.OK, response);
-        var source = new HibpBreachSource(client);
+        var source = new HibpBreachSource(hasher, client, parser, mapper);
 
-        var result = await source.CheckAsync(password);
+        var result = await source.CheckAsync("password123");
 
         Assert.Equal(BreachPrevalence.Medium, result.Prevalence);
     }
 
-
-    private sealed class FakeHttpMessageHandler : HttpMessageHandler
+    private sealed class FakeHasher : IPasswordHasher
     {
-        private readonly HttpStatusCode statusCode;
-        private readonly string content;
+        private readonly string hash;
 
-        public FakeHttpMessageHandler(HttpStatusCode statusCode, string content)
+        public FakeHasher(string hash)
         {
-            this.statusCode = statusCode;
-            this.content = content;
+            this.hash = hash;
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        public string Hash(string password) => hash;
+    }
+
+    private sealed class FakeHibpClient : IHibpClient
+    {
+        private readonly string? response;
+
+        public FakeHibpClient(string? response)
         {
-            return Task.FromResult(new HttpResponseMessage
-            {
-                StatusCode = statusCode,
-                Content = new StringContent(content, Encoding.UTF8)
-            });
+            this.response = response;
+        }
+
+        public Task<string?> GetRangeAsync(string prefix, CancellationToken ct)
+        {
+            return Task.FromResult(response);
         }
     }
 
-    private sealed class ThrowingHttpMessageHandler : HttpMessageHandler
+    private sealed class ThrowingHibpClient : IHibpClient
     {
-        protected override Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        public Task<string?> GetRangeAsync(string prefix, CancellationToken ct)
         {
             throw new HttpRequestException("Network error");
         }

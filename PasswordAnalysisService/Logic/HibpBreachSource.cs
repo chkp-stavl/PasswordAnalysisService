@@ -1,4 +1,5 @@
 ﻿
+using PasswordAnalysisService.Utilities;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,57 +10,37 @@ namespace PasswordAnalysisService.Logic
     public class HibpBreachSource : IBreachSource
     {
         private const string SourceName = "HaveIBeenPwned";
-        private readonly HttpClient httpClient;
+        private readonly IPasswordHasher hasher;
+        private readonly IHibpClient client;
+        private readonly IHibpResponseParser parser;
+        private readonly IBreachPrevalenceMapper prevalenceMapper;
 
-        public HibpBreachSource(HttpClient httpClient)
+        public HibpBreachSource(IPasswordHasher hasher, IHibpClient client, IHibpResponseParser parser, IBreachPrevalenceMapper prevalenceMapper)
         {
-            this.httpClient = httpClient;
-            this.httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
-                "PasswordAnalysisService/1.0"
-    );
+            this.hasher = hasher;
+            this.client = client;
+            this.parser = parser;
+            this.prevalenceMapper = prevalenceMapper;
         }
 
         public async Task<BreachSourceResult> CheckAsync(string password, CancellationToken ct = default)
         {
             try
             {
-                var hash = Sha1Hash(password);
+                var hash = hasher.Hash(password);
                 var prefix = hash[..5];
                 var suffix = hash[5..];
-                var response = await httpClient.GetAsync(
-               $"https://api.pwnedpasswords.com/range/{prefix}", ct);
-
-                if (!response.IsSuccessStatusCode)
-                {
+                var response = await client.GetRangeAsync(prefix, ct);
+                if (response is null)
                     return BreachSourceResult.Unavailable(SourceName);
-                }
-                var content = await response.Content.ReadAsStringAsync(ct);
 
-                foreach (var line in content.Split('\n'))
-                {
-                    var parts = line.Split(':');
-                    if (parts.Length != 2)
-                        continue;
-
-                    var responseSuffix = parts[0].Trim();
-                    var count = parts[1].Trim();
-
-                    if (responseSuffix.Equals(suffix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new BreachSourceResult(
-                            IsBreached: true,
-                            BreachCount: int.Parse(count),
-                            Source: "HaveIBeenPwned",
-                            Prevalence: MapPrevalence(int.Parse(count))
-                        );
-                    }
-                }
+                var breachCount = parser.FindBreachCount(response, suffix);
 
                 return new BreachSourceResult(
-                    IsBreached: false,
-                    BreachCount: 0,
-                    Source: "HaveIBeenPwned",
-                    Prevalence: BreachPrevalence.Unknown
+                    IsBreached: breachCount.HasValue,
+                    BreachCount: breachCount ?? 0,
+                    Source: SourceName,
+                    Prevalence: prevalenceMapper.Map(breachCount)
                 );
             }
             catch 
@@ -68,25 +49,5 @@ namespace PasswordAnalysisService.Logic
             }
         }
 
-        private static string Sha1Hash(string input)
-        {
-            using var sha1 = SHA1.Create();
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hash = sha1.ComputeHash(bytes);
-            return Convert.ToHexString(hash);
-        }
-
-        private static BreachPrevalence MapPrevalence(int? breachCount)
-        {
-            if (breachCount is null or 0)
-                return BreachPrevalence.Unknown;
-
-            return breachCount switch
-            {
-                >= 1000 => BreachPrevalence.High,
-                >= 10 => BreachPrevalence.Medium,
-                _ => BreachPrevalence.Low
-            };
-        }
     }
 }

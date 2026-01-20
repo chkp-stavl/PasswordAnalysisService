@@ -1,5 +1,6 @@
 using PasswordAnalysisService.Logic;
 using PasswordAnalysisService.Services;
+using PasswordAnalysisService.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
@@ -8,13 +9,18 @@ builder.Services.AddScoped<IPasswordAnalysisOrchestrator, PasswordAnalysisOrches
 builder.Services.AddScoped<IStrengthChecker, StrengthChecker>();
 builder.Services.AddScoped<IRiskAssessmentService, RiskAssessmentService>();
 
-builder.Services.AddHttpClient<IBreachSource,HibpBreachSource>(client =>
+builder.Services.AddHttpClient<IHibpClient, HibpClient>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(5);
     client.DefaultRequestHeaders.UserAgent.ParseAdd(
         "PasswordAnalysisService/1.0"
     );
 });
+builder.Services.AddScoped<IPasswordHasher, Sha1PasswordHasher>();
+builder.Services.AddScoped<IHibpResponseParser, HibpResponseParser>();
+builder.Services.AddScoped<IBreachPrevalenceMapper, BreachPrevalenceMapper>();
+
+builder.Services.AddScoped<IBreachSource, HibpBreachSource>();
 
 builder.Services.AddScoped<IBreachChecker, BreachChecker>();
 

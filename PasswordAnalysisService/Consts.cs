@@ -30,6 +30,8 @@
 
         public const int WEAK_THRESHOLD = 50;
         public const int STRENGTH_MEDIUM_THRESHOLD = 80;
+        public const int HIGH_THRESHOLD_BREACH = 1000;
+        public const int MEDIUM_THRESHOLD_BREACH = 10;
 
         public enum PasswordStrengthLevel
         {
