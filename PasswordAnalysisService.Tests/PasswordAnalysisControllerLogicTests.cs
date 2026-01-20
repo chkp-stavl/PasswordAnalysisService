@@ -12,13 +12,13 @@ using Domain.Models;
 
 public class PasswordAnalysisControllerLogicTests
 {
-    private readonly Mock<IAnalyzePasswordUseCase> useCaseMock;
+    private readonly Mock<IAnalyzePasswordUseCase> fakeAnalyzePasswordUseCase;
     private readonly PasswordAnalysisControllerLogic logic;
 
     public PasswordAnalysisControllerLogicTests()
     {
-        useCaseMock = new Mock<IAnalyzePasswordUseCase>();
-        logic = new PasswordAnalysisControllerLogic(useCaseMock.Object);
+        fakeAnalyzePasswordUseCase = new Mock<IAnalyzePasswordUseCase>();
+        logic = new PasswordAnalysisControllerLogic(fakeAnalyzePasswordUseCase.Object);
     }
 
 
@@ -40,7 +40,7 @@ public class PasswordAnalysisControllerLogicTests
  
         Assert.False(result.IsValid);
 
-        useCaseMock.VerifyNoOtherCalls();
+        fakeAnalyzePasswordUseCase.VerifyNoOtherCalls();
     }
 
 
@@ -54,7 +54,7 @@ public class PasswordAnalysisControllerLogicTests
             Password = "StrongPassword123!"
         };
 
-        useCaseMock
+        fakeAnalyzePasswordUseCase
             .Setup(u => u.ExecuteAsync(
                 It.IsAny<AnalyzePasswordRequest>(),
                 It.IsAny<CancellationToken>()))
@@ -75,7 +75,7 @@ public class PasswordAnalysisControllerLogicTests
         Assert.Equal(10, result.Risk.Score);
         Assert.Equal(RiskLevel.Low.ToString(), result.Risk.Level);
 
-        useCaseMock.Verify(
+        fakeAnalyzePasswordUseCase.Verify(
             u => u.ExecuteAsync(
                 It.IsAny<AnalyzePasswordRequest>(),
                 It.IsAny<CancellationToken>()),
@@ -91,7 +91,7 @@ public class PasswordAnalysisControllerLogicTests
             Password = "AnyPassword"
         };
 
-        useCaseMock
+        fakeAnalyzePasswordUseCase
             .Setup(u => u.ExecuteAsync(
                 It.IsAny<AnalyzePasswordRequest>(),
                 It.IsAny<CancellationToken>()))

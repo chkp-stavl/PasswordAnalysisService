@@ -5,16 +5,16 @@ namespace Infrastructure.Breach
 {
     public class BreachChecker : IBreachChecker
     {
-        private readonly IEnumerable<IBreachSource> sources;
+        private readonly IEnumerable<IBreachSource> _breachSources;
 
         public BreachChecker(IEnumerable<IBreachSource> sources)
         {
-            this.sources = sources;
+            this._breachSources = sources;
         }
 
         public async Task<BreachResult> CheckAsync(string password, CancellationToken ct)
         {
-            var tasks = sources.Select(s => SafeCheck(s, password, ct));
+            var tasks = _breachSources.Select(s => SafeCheck(s, password, ct));
             var results = await Task.WhenAll(tasks);
 
             return new BreachResult(

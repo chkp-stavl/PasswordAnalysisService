@@ -6,37 +6,37 @@ namespace Infrastructure.Breach
     public class HibpBreachSource : IBreachSource
     {
         private const string SourceName = "HaveIBeenPwned";
-        private readonly IPasswordHasher hasher;
-        private readonly IHibpClient client;
-        private readonly IHibpResponseParser parser;
-        private readonly IBreachPrevalenceMapper prevalenceMapper;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IHibpClient _hibpClientient;
+        private readonly IHibpResponseParser _hibpResponseParser;
+        private readonly IBreachPrevalenceMapper _breachPrevalenceMapper;
 
         public HibpBreachSource(IPasswordHasher hasher, IHibpClient client, IHibpResponseParser parser, IBreachPrevalenceMapper prevalenceMapper)
         {
-            this.hasher = hasher;
-            this.client = client;
-            this.parser = parser;
-            this.prevalenceMapper = prevalenceMapper;
+            this._passwordHasher = hasher;
+            this._hibpClientient = client;
+            this._hibpResponseParser = parser;
+            this._breachPrevalenceMapper = prevalenceMapper;
         }
 
         public async Task<BreachSourceResult> CheckAsync(string password, CancellationToken ct = default)
         {
             try
             {
-                var hash = hasher.Hash(password);
+                var hash = _passwordHasher.Hash(password);
                 var prefix = hash[..5];
                 var suffix = hash[5..];
-                var response = await client.GetRangeAsync(prefix, ct);
+                var response = await _hibpClientient.GetRangeAsync(prefix, ct);
                 if (response is null)
                     return BreachSourceResult.Unavailable(SourceName);
 
-                var breachCount = parser.FindBreachCount(response, suffix);
+                var breachCount = _hibpResponseParser.FindBreachCount(response, suffix);
 
                 return new BreachSourceResult(
                     IsBreached: breachCount.HasValue,
                     BreachCount: breachCount ?? 0,
                     Source: SourceName,
-                    Prevalence: prevalenceMapper.Map(breachCount)
+                    Prevalence: _breachPrevalenceMapper.Map(breachCount)
                 );
             }
             catch

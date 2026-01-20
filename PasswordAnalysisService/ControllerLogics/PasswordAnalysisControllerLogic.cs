@@ -9,12 +9,12 @@ namespace PasswordAnalysisService.Services
 {
     public class PasswordAnalysisControllerLogic : IPasswordAnalysisControllerLogic
     {
-        private readonly IAnalyzePasswordUseCase _useCase;
+        private readonly IAnalyzePasswordUseCase _analyzePasswordUseCase;
 
         public PasswordAnalysisControllerLogic(
             IAnalyzePasswordUseCase useCase)
         {
-            _useCase = useCase;
+            _analyzePasswordUseCase = useCase;
         }
 
         public async Task<AnalyzePasswordResponseDto> Analyze(
@@ -29,7 +29,7 @@ namespace PasswordAnalysisService.Services
 
             try
             {
-                var result = await _useCase.ExecuteAsync(
+                var result = await _analyzePasswordUseCase.ExecuteAsync(
                     new AnalyzePasswordRequest() { Password = request.Password},
                     ct);
 

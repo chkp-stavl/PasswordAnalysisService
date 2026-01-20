@@ -10,12 +10,12 @@ namespace PasswordAnalysisService.Controllers
     [Route("api/password-analysis")]
     public sealed class PasswordAnalysisController : ControllerBase
     {
-        private readonly IPasswordAnalysisControllerLogic _logic;
+        private readonly IPasswordAnalysisControllerLogic _passwordAnalysisControllerLogic;
 
         public PasswordAnalysisController(
             IPasswordAnalysisControllerLogic logic)
         {
-            _logic = logic;
+            _passwordAnalysisControllerLogic = logic;
         }
 
         [HttpPost("analyze")]
@@ -25,7 +25,7 @@ namespace PasswordAnalysisService.Controllers
         {
             try
             {
-                var response = await _logic.Analyze(request, ct);
+                var response = await _passwordAnalysisControllerLogic.Analyze(request, ct);
 
                 if (!response.IsValid)
                 {
