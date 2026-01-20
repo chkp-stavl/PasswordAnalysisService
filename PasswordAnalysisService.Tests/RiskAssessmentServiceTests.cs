@@ -1,10 +1,10 @@
 ﻿namespace PasswordAnalysisService.Tests;
 
-using PasswordAnalysisService.Services;
-using PasswordAnalysisService.Models.Responses;
+using Domain.Enums;
+using Domain.Models;
+using Infrastructure.Risk;
 using System.Collections.Immutable;
-using PasswordAnalysisService.Logic;
-using static PasswordAnalysisService.Consts;
+
 
 public class RiskAssessmentServiceTests
 {

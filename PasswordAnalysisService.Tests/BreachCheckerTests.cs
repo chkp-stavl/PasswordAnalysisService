@@ -1,7 +1,10 @@
 ﻿namespace PasswordAnalysisService.Tests;
 
+using Domain.Interfaces;
+using Domain.Models;
+using Infrastructure.Breach;
 using Moq;
-using PasswordAnalysisService.Logic;
+
 
 public class BreachCheckerTests
 {

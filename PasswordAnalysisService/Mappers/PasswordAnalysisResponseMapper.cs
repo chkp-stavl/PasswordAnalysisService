@@ -1,37 +1,39 @@
-﻿using PasswordAnalysisService.Logic;
+﻿using Application.Responses;
 using PasswordAnalysisService.Models.Responses;
-using PasswordAnalysisService.Services;
 
 namespace PasswordAnalysisService.Mappers
 {
     public static class PasswordAnalysisResponseMapper
     {
-        public static PasswordAnalysisResponse Map(
-            StrengthResult strength,
-            BreachResult breach,
-            RiskResult risk)
+        public static AnalyzePasswordResponseDto Map(
+           AnalyzePasswordResult result)
         {
-            return new PasswordAnalysisResponse
+            return new AnalyzePasswordResponseDto
             {
                 Strength = new PasswordStrengthDto
                 {
-                    Score = strength.Score,
-                    Level = strength.Level.ToString(),
-                    Issues = strength.Issues
+                    Score = result.Strength.Score,
+                    Level = result.Strength.Level.ToString(),
+                    Issues = result.Strength.Issues
                 },
                 Breach = new BreachDto
                 {
-                    IsCompromised = breach.IsBreached,
-                    Sources = breach.Sources,
-                    Warning = breach.AllSourcesUnavailable
+                    IsCompromised = result.Breach.IsBreached,
+                    Sources = result.Breach.Sources.Select(s => new BreachSourceDto
+                    {
+                        Source = s.Source,
+                        BreachCount = s.BreachCount,
+                        Prevalence = s.Prevalence.ToString()
+                    }).ToList(),
+                    Warning = result.Breach.AllSourcesUnavailable
                         ? "Breach checks are temporarily unavailable."
                         : null
                 },
                 Risk = new RiskDto
                 {
-                    Score = risk.Score,
-                    Level = risk.Level.ToString(),
-                    Reasons = risk.Reasons
+                    Score = result.Risk.Score,
+                    Level = result.Risk.Level.ToString(),
+                    Reasons = result.Risk.Reasons
                 }
             };
         }

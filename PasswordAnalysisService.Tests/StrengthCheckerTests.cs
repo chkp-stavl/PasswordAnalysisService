@@ -1,8 +1,8 @@
 ﻿namespace PasswordAnalysisService.Tests;
 
-using PasswordAnalysisService.Logic;
-using System.Collections.Immutable;
-using static PasswordAnalysisService.Consts;
+using Domain.Constants;
+using Domain.Enums;
+using Infrastructure.Strength;
 
 public class StrengthCheckerTests
 {
@@ -27,7 +27,7 @@ public class StrengthCheckerTests
 
         var result = await checker.CheckAsync(password, CancellationToken.None);
 
-        Assert.True(result.Score < WEAK_THRESHOLD);
+        Assert.True(result.Score < StrengthConstants.WEAK_THRESHOLD);
         Assert.Equal(PasswordStrengthLevel.Weak, result.Level);
 
         Assert.Contains("Password is too short", result.Issues);

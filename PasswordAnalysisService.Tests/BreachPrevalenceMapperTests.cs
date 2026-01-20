@@ -1,10 +1,7 @@
-﻿using PasswordAnalysisService.Logic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static PasswordAnalysisService.Consts;
+﻿using Domain.Constants;
+using Domain.Enums;
+using Infrastructure.Breach;
+
 
 namespace PasswordAnalysisService.Tests
 {
@@ -17,10 +14,10 @@ namespace PasswordAnalysisService.Tests
         [InlineData(null, BreachPrevalence.Unknown)]
         [InlineData(0, BreachPrevalence.Unknown)]
         [InlineData(1, BreachPrevalence.Low)]
-        [InlineData(MEDIUM_THRESHOLD_BREACH - 1, BreachPrevalence.Low)]
-        [InlineData(MEDIUM_THRESHOLD_BREACH, BreachPrevalence.Medium)]
-        [InlineData(HIGH_THRESHOLD_BREACH - 1, BreachPrevalence.Medium)]
-        [InlineData(HIGH_THRESHOLD_BREACH, BreachPrevalence.High)]
+        [InlineData(BreachThresholds.MEDIUM - 1, BreachPrevalence.Low)]
+        [InlineData(BreachThresholds.MEDIUM, BreachPrevalence.Medium)]
+        [InlineData(BreachThresholds.HIGH - 1, BreachPrevalence.Medium)]
+        [InlineData(BreachThresholds.HIGH, BreachPrevalence.High)]
         public void Map_ReturnsExpectedPrevalence(
             int? count,
             BreachPrevalence expected)

@@ -1,8 +1,10 @@
 ﻿namespace PasswordAnalysisService.Tests;
 
-using PasswordAnalysisService.Logic;
-using PasswordAnalysisService.Utilities;
-using static PasswordAnalysisService.Consts;
+using Domain.Constants;
+using Domain.Enums;
+using Domain.Interfaces;
+using Infrastructure.Breach;
+
 
 public class HibpBreachSourceTests
 {
@@ -10,7 +12,7 @@ public class HibpBreachSourceTests
     public async Task CheckAsync_WhenPasswordIsFound_ReturnsBreachedResult()
     {
         var hasher = new FakeHasher("ABCDESUFFIX");
-        var client = new FakeHibpClient($"SUFFIX:{HIGH_THRESHOLD_BREACH}");
+        var client = new FakeHibpClient($"SUFFIX:{BreachThresholds.HIGH}");
         var parser = new HibpResponseParser();
         var mapper = new BreachPrevalenceMapper();
 
@@ -19,7 +21,7 @@ public class HibpBreachSourceTests
         var result = await source.CheckAsync("password123");
 
         Assert.True(result.IsBreached);
-        Assert.Equal(HIGH_THRESHOLD_BREACH, result.BreachCount);
+        Assert.Equal(BreachThresholds.HIGH, result.BreachCount);
         Assert.Equal(BreachPrevalence.High, result.Prevalence);
         Assert.True(result.IsAvailable);
     }
@@ -75,7 +77,7 @@ public class HibpBreachSourceTests
     public async Task CheckAsync_WhenMediumBreachCount_ReturnsMediumPrevalence()
     {
         var hasher = new FakeHasher("ABCDESUFFIX");
-        var client = new FakeHibpClient($"SUFFIX:{MEDIUM_THRESHOLD_BREACH}");
+        var client = new FakeHibpClient($"SUFFIX:{BreachThresholds.MEDIUM}");
         var parser = new HibpResponseParser();
         var mapper = new BreachPrevalenceMapper();
 

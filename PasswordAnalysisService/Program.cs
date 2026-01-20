@@ -1,33 +1,25 @@
-using PasswordAnalysisService.Logic;
+using API.ControllerLogics;
 using PasswordAnalysisService.Services;
-using PasswordAnalysisService.Utilities;
+using Application.DependencyInjection;
+using Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Controllers & Swagger
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IPasswordAnalysisOrchestrator, PasswordAnalysisOrchestrator>();
-builder.Services.AddScoped<IStrengthChecker, StrengthChecker>();
-builder.Services.AddScoped<IRiskAssessmentService, RiskAssessmentService>();
 
-builder.Services.AddHttpClient<IHibpClient, HibpClient>(client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(5);
-    client.DefaultRequestHeaders.UserAgent.ParseAdd(
-        "PasswordAnalysisService/1.0"
-    );
-});
-builder.Services.AddScoped<IPasswordHasher, Sha1PasswordHasher>();
-builder.Services.AddScoped<IHibpResponseParser, HibpResponseParser>();
-builder.Services.AddScoped<IBreachPrevalenceMapper, BreachPrevalenceMapper>();
+// Clean Architecture layers
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddScoped<IBreachSource, HibpBreachSource>();
-
-builder.Services.AddScoped<IBreachChecker, BreachChecker>();
-
-builder.Services.AddControllers();
+// API layer registrations
+builder.Services.AddScoped<
+    IPasswordAnalysisControllerLogic,
+    PasswordAnalysisControllerLogic>();
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -36,6 +28,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.MapControllers();
 app.Run();

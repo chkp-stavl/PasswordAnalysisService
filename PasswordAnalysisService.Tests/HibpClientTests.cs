@@ -1,10 +1,5 @@
-﻿using PasswordAnalysisService.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Infrastructure.Breach;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PasswordAnalysisService.Tests
 {
