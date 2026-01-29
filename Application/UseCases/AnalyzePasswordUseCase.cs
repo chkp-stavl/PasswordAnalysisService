@@ -25,7 +25,7 @@ namespace Application.UseCases
             AnalyzePasswordRequest request,
             CancellationToken ct)
         {
-            var strengthTask = _strengthChecker.CheckAsync(request.Password, ct);
+            var strengthTask = _strengthChecker.Check(request.Password, ct);
             var breachTask = _breachChecker.CheckAsync(request.Password, ct);
 
             await Task.WhenAll(strengthTask, breachTask);

@@ -7,6 +7,6 @@ namespace Domain.Models
     (
         int Score,
         PasswordStrengthLevel Level,
-        ImmutableArray<string> Issues
+        List<string> Issues
     );
 }

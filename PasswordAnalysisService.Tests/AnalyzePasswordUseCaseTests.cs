@@ -1,6 +1,4 @@
-﻿using Application.Requests;
-using Application.UseCases;
-using Domain.Enums;
+﻿using Domain.Enums;
 using Domain.Interfaces;
 using Domain.Models;
 using Moq;
@@ -21,7 +19,7 @@ namespace PasswordAnalysisService.Tests
             var breachResult = new BreachResult(false, Array.Empty<BreachSourceResult>());
             var riskResult = new RiskResult(RiskLevel.Low, 0, Array.Empty<string>());
 
-            strength.Setup(s => s.CheckAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            strength.Setup(s => s.Check(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(strengthResult);
 
             breach.Setup(b => b.CheckAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))

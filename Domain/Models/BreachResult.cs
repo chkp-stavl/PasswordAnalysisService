@@ -2,7 +2,7 @@
 {
     public record BreachResult(
     bool IsBreached,
-    IReadOnlyList<BreachSourceResult> Sources
+    List<BreachSourceResult> Sources
 
     )
     {
