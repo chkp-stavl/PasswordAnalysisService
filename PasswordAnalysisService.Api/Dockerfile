@@ -2,17 +2,21 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# copy csproj and restore
-COPY PasswordAnalysisService.Api.csproj .
-RUN dotnet restore
-
-# copy everything else
+# Copy everything in the repo
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+
+# Move into API project directory
+WORKDIR /src/PasswordAnalysisService.Api
+
+# Restore & publish the API project explicitly
+RUN dotnet restore PasswordAnalysisService.Api.csproj
+RUN dotnet publish PasswordAnalysisService.Api.csproj -c Release -o /app/publish
 
 # ---------- Runtime stage ----------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+
 COPY --from=build /app/publish .
-EXPOSE 8080
+
+EXPOSE 10000
 ENTRYPOINT ["dotnet", "PasswordAnalysisService.Api.dll"]
