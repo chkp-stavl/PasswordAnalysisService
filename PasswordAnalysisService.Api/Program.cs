@@ -12,6 +12,10 @@ using PasswordAnalysisService.Infrastructure.Breach.Mapping;
 using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "10000"));
+});
 
 // Controllers & Swagger
 builder.Services
@@ -57,12 +61,14 @@ builder.Services.AddValidatorsFromAssemblyContaining<AnalyzePasswordRequestValid
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
+app.UseSwagger();
+app.UseSwaggerUI();
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
